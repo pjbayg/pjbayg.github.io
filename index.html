@@ -1,0 +1,194 @@
+<script>
+function scorea(abstr,explain) {
+  var results = "";
+  var last = abstr.slice(-1);
+  var splits = [];
+  var tota = 0;
+  var totb = 0;
+  var len= abstr.length;
+  for (var i=0; i < len;i++) {
+  	if (abstr[i] == 'a') { tota++; }
+    else { totb++; }
+  	if (abstr[i] == last) {
+    } else {
+		splits.push(i);
+        last = abstr[i];
+    }
+  }
+  var score = 0;
+  // first we score weekends... one for each parent
+  // this is based solely on saturday night
+  if (abstr[5]==abstr[12]) {
+  	results+="same parent sat nights penalty 20<br>";
+  	score+=20;
+  }
+
+  // next check weekend integrity
+  wkndint = (abstr[4]==abstr[5]?0:window.pfri) +
+  			(abstr[5]==abstr[6]?0:window.psun) +
+  			(abstr[11]==abstr[12]?0:window.pfri) +
+  			(abstr[12]==abstr[13]?0:window.psun);
+  			
+  score+=wkndint;
+  
+  //check overall balance
+  score+=Math.abs(tota-totb)*window.pbal;
+  
+  //check chunk sizes
+  //now we score the chunk sizes
+  var chunkscores = window.pchunks;
+  chunks = [];
+  for (var i=0;i<splits.length;i++) {
+  	chstart = splits[i];
+    chend = splits[(i+1)%splits.length];
+    chlen = (chend - chstart+len)%len;
+    chunks.push(chlen);
+    score += chunkscores[chlen];
+  }
+  
+  
+  if (explain) {
+  	results+="chunks: "+chunks+"; ";
+    results+="score: "+score+"; ";
+    results+="totals: a = "+tota+" b = "+totb;
+  	//results+=splits+"<br>";
+    //results+=chunks+"<br>";
+    //results+="<br>";
+  	return results;
+  } else { return score; }
+
+}
+
+function allsched() {
+	var scrstrs = [];
+    window.pfri = parseFloat(document.getElementById('pfri').value);
+    window.psun = parseFloat(document.getElementById('psun').value);
+    window.pbal = parseFloat(document.getElementById('pbal').value);
+    window.pcut = parseFloat(document.getElementById('pcut').value);
+
+  	var pchunks = [100,4,2,0,0,2,6,8,10,12,14,16,18,20,20];
+    for (var i = 1; i<=9;i++) {
+		pchunks[i] = parseFloat(document.getElementById('pch'+i).value);
+	}
+    window.pchunks = pchunks;
+	//console.log(pfri,psun);
+    //console.log(pchunks);
+   	var cal = document.getElementById("cal");
+    cal.innerHTML = "";
+    
+	for (var snum = 0; snum < (1<<14); snum+=2) {
+    	var abstr = "";
+    	for (var i = 0; i<14;i++) {
+          abstr+=((snum & (1<<i)) ? "a" : "b");
+        }
+        scr = scorea(abstr,false);
+        if (scr<=window.pcut) {
+          scrstrs.push([scr,abstr]);
+        }
+    }
+    scrstrs.sort(function(a,b) {return a[0]-b[0];});
+    for (var i = 0; i<scrstrs.length;i++) {
+    	abstr = scrstrs[i][1];
+    	draw_sched(abstr);
+    }
+}
+
+function sched_this() {
+  var abstr = document.getElementById('abstr').value;
+  scorea(abstr,true);
+}
+
+function draw_sched(abstr) {
+	var cal = document.getElementById("cal");
+    var exps = scorea(abstr,true);
+    var exp = document.createTextNode(exps);
+    var td = document.createElement("td");
+    td.appendChild(exp);
+    td.colSpan = "14";
+    td.style.textAlign = "center";
+    var tr = document.createElement("tr");
+    tr.appendChild(td);
+    cal.appendChild(sched_row(abstr));
+    cal.appendChild(tr);
+}
+
+function sched_row(abstr) {
+	var days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+	var row = document.createElement("tr");
+    var colors = {
+    "a":"#FFBBBB",
+    "b":"#BBBBFF",
+    "s":"#BBBBBB"
+    }
+    
+    var lastcol = colors[abstr[abstr.length-1]];
+    for (var i=0;i<abstr.length;i++) {
+    	var cell = document.createElement("td");
+        var day = document.createTextNode(days[i%7]);
+        var morn = document.createElement("span");
+        var mid = document.createElement("span");
+        var night = document.createElement("span");
+        var sp = document.createElement("span");
+        morn.style.backgroundColor = lastcol;
+        mid.style.backgroundColor = colors["s"];
+        if (i%7 == 6) {
+        	mid.style.backgroundColor = lastcol;
+        }
+        lastcol = colors[abstr[i]];
+        if (i%7 == 5) {
+        	mid.style.backgroundColor = lastcol;
+        }
+        night.style.backgroundColor = lastcol;
+        morn.style.width = "15px";
+        morn.style.height = "40px";
+        morn.style.display = "inline-block";
+        mid.style.width = "15px";
+        mid.style.height = "40px";
+        mid.style.display = "inline-block";
+        night.style.width = "10px";
+        night.style.height= "40px";
+        night.style.display = "inline-block";
+        cell.appendChild(morn);
+        cell.appendChild(mid);
+        cell.appendChild(night);
+        cell.appendChild(sp);
+        cell.style.position = "relative";
+        sp.style.position = "absolute";
+        sp.style.top = "15px";
+        sp.style.left = "10px";
+        sp.appendChild(day);
+        cell.style.padding = "0";
+        //cell.style.backgroundColor = colors[abstr[i]];
+        //cell.style.height = "40px";
+        //cell.style.width = "40px";
+
+
+        row.appendChild(cell);
+    }
+    return row;
+}
+
+</script>
+Friday night: <input type=number value="2" id=pfri style="width: 5em">
+Sunday night: <input type=number value="2" id=psun style="width: 5em"><br>
+Balance/day: <input type=number value="2" id=pbal style="width: 5em"><br>
+Chunk
+1: <input type=number value="4" id=pch1 style="width: 3em">
+2: <input type=number value="2" id=pch2 style="width: 3em">
+3: <input type=number value="0" id=pch3 style="width: 3em">
+4: <input type=number value="0" id=pch4 style="width: 3em">
+5: <input type=number value="2" id=pch5 style="width: 3em">
+6: <input type=number value="6" id=pch6 style="width: 3em">
+7: <input type=number value="8" id=pch7 style="width: 3em">
+8: <input type=number value="10" id=pch8 style="width: 3em">
+9: <input type=number value="12" id=pch9 style="width: 3em"><br>
+
+Cutoff: <input type=number value="8" id=pcut style="width: 5em"><br>
+<input type=button value="Optimize" onClick="allsched()">
+<br>
+Lower scores are better<p>
+<table id=cal>
+</table>
+<script>
+allsched();
+</script>
