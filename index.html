@@ -169,6 +169,17 @@ function sched_row(abstr) {
 }
 
 </script>
+<h3>Schedule Generator</h3>
+This page generates a schedule.  It is based on nights rather than days.
+In general, each night starts in the late afternoon/early evening and continues until the next morning.
+Satuday is special in that it starts in the morning and extends until the next evening.<p>
+	
+Below you can set various parameters for schedules.  These are mostly penalties that get applied to
+schedules for failing to meet certain ideals.  E.g. if a Friday night is disconnected from the Saturday
+then there is (by default) a 2 point penalty applied.  A perfect schedule would get a total score of 0
+but this is generally impossible.
+<p>
+	
 Friday night: <input type=number value="2" id=pfri style="width: 5em">
 Sunday night: <input type=number value="2" id=psun style="width: 5em"><br>
 Balance/day: <input type=number value="2" id=pbal style="width: 5em"><br>
