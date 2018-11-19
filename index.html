@@ -122,7 +122,7 @@ function sched_row(abstr) {
     }
     
     var lastcol = colors[abstr[abstr.length-1]];
-    for (var i=0;i<abstr.length;i++) {
+    for (var i=0;i<abstr.length*2;i++) {
     	var cell = document.createElement("td");
         var day = document.createTextNode(days[i%7]);
         var morn = document.createElement("span");
@@ -134,7 +134,7 @@ function sched_row(abstr) {
         if (i%7 == 6) {
         	mid.style.backgroundColor = lastcol;
         }
-        lastcol = colors[abstr[i]];
+        lastcol = colors[abstr[i%abstr.length]];
         if (i%7 == 5) {
         	mid.style.backgroundColor = lastcol;
         }
@@ -148,6 +148,7 @@ function sched_row(abstr) {
         night.style.width = "10px";
         night.style.height= "40px";
         night.style.display = "inline-block";
+        cell.style.whiteSpace = 'nowrap';
         cell.appendChild(morn);
         cell.appendChild(mid);
         cell.appendChild(night);
@@ -169,6 +170,7 @@ function sched_row(abstr) {
 }
 
 </script>
+
 <h3>Schedule Generator</h3>
 This page generates a schedule.  It is based on nights rather than days.
 In general, each night starts in the late afternoon/early evening and continues until the next morning.
@@ -179,7 +181,7 @@ schedules for failing to meet certain ideals.  E.g. if a Friday night is disconn
 then there is (by default) a 2 point penalty applied.  A perfect schedule would get a total score of 0
 but this is generally impossible.
 <p>
-	
+
 Friday night: <input type=number value="2" id=pfri style="width: 5em">
 Sunday night: <input type=number value="2" id=psun style="width: 5em"><br>
 Balance/day: <input type=number value="2" id=pbal style="width: 5em"><br>
